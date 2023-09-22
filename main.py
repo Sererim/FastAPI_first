@@ -14,13 +14,14 @@ async def root(request: Request):
     return templates.TemplateResponse("root.html", {"request": request, "tasks": name})
 
 
+# Gets out all tasks.
 @app.get("/tasks", response_class=HTMLResponse)
 async def show_all_tasks():
     global tasks
     return templates.TemplateResponse("root.html", {"request": tasks, "tasks": tasks})
 
 
-# Makes a table with all tasks.
+# Returns a single task.
 @app.get("/tasks/{id}", response_class=HTMLResponse)
 async def show_one_task(id: int, request: Request):
     global tasks
@@ -33,7 +34,7 @@ async def show_one_task(id: int, request: Request):
 
 # Adds new task.
 @app.post("/tasks", response_class=HTMLResponse)
-async def add_task(Name: str, Description: str, Status: bool, request:Request):
+async def add_task(Name: str, Description: str, Status: bool, request: Request):
     global tasks
     task = Task(Name=Name, Description=Description, Status=Status)
     tasks[len(tasks) + 1] = task
@@ -42,7 +43,7 @@ async def add_task(Name: str, Description: str, Status: bool, request:Request):
 
 # Update a task.
 @app.put("/tasks/{id}", response_class=HTMLResponse)
-async def update_task(id: int, Name: str, Description: str, Status: bool, request:Request):
+async def update_task(id: int, Name: str, Description: str, Status: bool, request: Request):
     global tasks
     try:
         temp = tasks[id]
@@ -50,19 +51,18 @@ async def update_task(id: int, Name: str, Description: str, Status: bool, reques
         temp.Description = Description
         temp.Status = Status
         tasks[id] = temp
-        return templates.TemplateResponse("root.html", {"request": request, "tasks": temp})
+        return templates.TemplateResponse("root.html", {"request": request, "tasks": {id: temp}})
     except LookupError:
         return "<h1> NO TASK FOUND </h1>"
 
 
 # Delete a task.
-@app.delete("tasks/{id}", response_class=HTMLResponse)
-async def delete_task(id: int, request:Request):
+@app.delete("/tasks/{id}", response_class=HTMLResponse)
+async def delete_task(id: int, request: Request):
     global tasks
     try:
-        tasks[id]
-        tasks.pop(id)
-        return templates.TemplateResponse("root.html", {"request": request, "tasks": temp})
+        del tasks[id]
+        return templates.TemplateResponse("root.html", {"request": request, "tasks": tasks})
     except LookupError:
         return "<h1> NO TASK FOUND </h1>"
 
